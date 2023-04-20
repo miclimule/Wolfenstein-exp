@@ -1,0 +1,143 @@
+<style>
+  html,
+  body,
+  canvas {
+    margin: 0px;
+    padding: 0px;
+  }
+</style>
+<canvas id="screen" style="width: 100%; height: 100%"></canvas>
+<script>
+  const canvas = document.getElementById("screen");
+  const context = canvas.getContext("2d");
+
+  const fps = 60;
+  const cycleDelay = Math.floor(1000 / fps);
+  var oldCycleTime = 0;
+  var cycleCount = 0;
+  var fps_rate = "...";
+
+  const map_size = 16 , map_size_min = 11 , map_size_max = 21;
+  const map_scale = 10 , map_scale_min = 5 , map_scale_max = 15;
+  const map_range = map_scale * map_size;
+  const map_speed = map_scale / 2 / 10;
+  // var tmp_map_size = 0;
+
+  var direction_scale = true;
+
+  var map = [
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+    1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+  ];
+
+  const WIDTH = 300,HALF_WIDTH = 150;
+  const HEIGHT = 200,HALF_HEIGHT = 100;
+
+  function gameLoop() {
+    cycleCount++;
+    if (cycleCount >= 60) {
+      cycleCount = 0;
+      // direction_scale = !direction_scale;
+      // tmp_map_size=-tmp_map_size;
+    }
+    var startTime = Date.now();
+    var cycleTime = startTime - oldCycleTime;
+    oldCycleTime = startTime;
+    if (cycleCount % 60 == 0) fps_rate = Math.floor(1000 / cycleTime);
+
+    canvas.width = window.innerWidth * 0.3;
+    canvas.height = window.innerHeight * 0.3;
+
+    context.fillStyle = "Black";
+    context.fillRect(
+      canvas.width / 2 - HALF_WIDTH,
+      canvas.height / 2 - HALF_HEIGHT,
+      WIDTH,
+      HEIGHT
+    );
+    // tmp_map_size++;
+    
+
+    for (var row = 0; row < map_size; row++) {
+      for (var col = 0; col < map_size; col++) {
+        var square = row * map_size + col;
+        if (map[square] != 0) {
+          context.fillStyle = '#555';
+          context.fillRect(Math.floor(canvas.width / 2 - map_range / 2) + col * map_scale,
+                           Math.floor(canvas.height / 2 - map_range / 2) + row * map_scale, map_scale, map_scale);
+        } else {
+          context.fillStyle = '#aaa';
+          context.fillRect(Math.floor(canvas.width / 2 - map_range / 2) + col * map_scale,
+                           Math.floor(canvas.height / 2 - map_range / 2) + row * map_scale, map_scale, map_scale);
+        }
+      }
+    }
+    // for (var row = 0; row < map_size; row++) {
+    //   for (var col = 0; col < map_size; col++) {
+    //     var square = row * map_size + col;
+    //     if (direction_scale) {
+    //         if (map[square] != 0) {
+    //             context.fillStyle = "#555";
+    //             context.fillRect(
+    //                 (Math.floor(canvas.width / 2 - map_range / 2) + col * (map_scale - ((tmp_map_size / 2 ) * 0.2))),
+    //                 (Math.floor(canvas.height / 2 - map_range / 2) + row * (map_scale - ((tmp_map_size / 2 ) * 0.2))),
+    //                 map_scale - ((tmp_map_size / 2 ) * 0.2),
+    //                 map_scale - ((tmp_map_size / 2 ) * 0.2)
+    //             );
+    //             } else {
+    //             context.fillStyle = "#aaa";
+    //             context.fillRect(
+    //                 (Math.floor(canvas.width / 2 - map_range / 2) + col * (map_scale - ((tmp_map_size / 2 ) * 0.2))),
+    //                 (Math.floor(canvas.height / 2 - map_range / 2) + row * (map_scale - ((tmp_map_size / 2 ) * 0.2))),
+    //                 map_scale - ((tmp_map_size / 2 ) * 0.2),
+    //                 map_scale - ((tmp_map_size / 2 ) * 0.2)
+    //             );
+    //         }
+    //     } 
+    //     else {
+    //         if (map[square] != 0) {
+    //             context.fillStyle = "#555";
+    //             context.fillRect(
+    //                 (Math.floor(canvas.width / 2 - map_range / 2) + col * (map_scale + ((tmp_map_size / 2 ) * 0.2))),
+    //                 (Math.floor(canvas.height / 2 - map_range / 2) + row * (map_scale + ((tmp_map_size / 2 ) * 0.2))),
+    //                 map_scale + ((tmp_map_size / 2 ) * 0.2),
+    //                 map_scale + ((tmp_map_size / 2 ) * 0.2)
+    //             );
+    //             } else {
+    //             context.fillStyle = "#aaa";
+    //             context.fillRect(
+    //                 (Math.floor(canvas.width / 2 - map_range / 2) + col * (map_scale + ((tmp_map_size / 2 ) * 0.2))),
+    //                 (Math.floor(canvas.height / 2 - map_range / 2) + row * (map_scale + ((tmp_map_size / 2 ) * 0.2))),
+    //                 map_scale + ((tmp_map_size / 2 ) * 0.2),
+    //                 map_scale + ((tmp_map_size / 2 ) * 0.2)
+    //             );
+    //         }
+    //     }
+        
+    //   }
+    // }
+
+    setTimeout(gameLoop, cycleDelay);
+
+    context.fillStyle = "Black";
+    context.font = "10px Monospace";
+    context.fillText("FPS :" + fps_rate, 0, 20);
+  }
+  window.onload = function () {
+    gameLoop();
+  };
+</script>
