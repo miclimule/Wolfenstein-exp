@@ -25,6 +25,36 @@
 
   var direction_scale = true;
 
+  var playerX = map_scale + 20;
+  var playerY = map_scale + 20;
+  var playerAngle = Math.PI / 3;
+  var playerMoveX = 0;
+  var playerMoveY = 0;
+  var playerMoveAngle = 0;
+
+  document.onkeydown = function(event) {
+    console.log(event.keyCode);
+    switch (event.keyCode){
+      case 40: playerMoveX = -1; playerMoveY = -1; break;
+      case 38: playerMoveX = 1; playerMoveY = 1; break;
+      case 37: playerMoveAngle= 1; break;
+      case 39: playerMoveAngle=-1; break;
+    }
+  }
+
+  document.onkeyup = function(event) {
+    switch (event.keyCode){
+      case 40: 
+      case 38: playerMoveX = 0; playerMoveY = 0; break;
+      case 37: 
+      case 39: playerMoveAngle=0; break;
+    }
+  }
+
+  //camera
+  const doublePI = Math.PI * 2;
+  
+
   var map = [
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
     1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
@@ -71,21 +101,57 @@
     );
     // tmp_map_size++;
     
+    var playerOffsetX = Math.sin(playerAngle) * map_speed;
+    var playerOffsetY = Math.cos(playerAngle) * map_speed;
+    var mapTargetX = Math.floor(playerY / map_scale) * map_size + Math.floor((playerX + playerOffsetX * playerMoveX) / map_scale);
+    var mapTargetY = Math.floor((playerY + playerOffsetY * playerMoveY) / map_scale) * map_size + Math.floor((playerX) / map_scale);
+
+    if (playerMoveX && map[mapTargetX] == 0) {
+      playerX += playerOffsetX*playerMoveX;
+    }
+
+    if (playerMoveY && map[mapTargetY] == 0) {
+      playerY += playerOffsetY*playerMoveY;
+    }
+
+    if (playerMoveAngle) {
+      playerAngle += 0.03 * playerMoveAngle;
+    }
+
+    var mapOffsetX = Math.floor(canvas.width / 2 - map_range / 2);
+    var mapOffsetY = Math.floor(canvas.height / 2 - map_range / 2) ;
 
     for (var row = 0; row < map_size; row++) {
       for (var col = 0; col < map_size; col++) {
         var square = row * map_size + col;
         if (map[square] != 0) {
           context.fillStyle = '#555';
-          context.fillRect(Math.floor(canvas.width / 2 - map_range / 2) + col * map_scale,
-                           Math.floor(canvas.height / 2 - map_range / 2) + row * map_scale, map_scale, map_scale);
+          context.fillRect(mapOffsetX + col * map_scale,
+                          mapOffsetY + row * map_scale, map_scale, map_scale);
         } else {
           context.fillStyle = '#aaa';
-          context.fillRect(Math.floor(canvas.width / 2 - map_range / 2) + col * map_scale,
-                           Math.floor(canvas.height / 2 - map_range / 2) + row * map_scale, map_scale, map_scale);
+          context.fillRect(mapOffsetX+ col * map_scale,
+                           mapOffsetY + row * map_scale, map_scale, map_scale);
         }
       }
     }
+
+    var playerMapX = playerX + mapOffsetX;
+    var playerMapY = playerY + mapOffsetY;
+
+
+    context.fillStyle = "Red";
+    context.beginPath();
+    context.arc(playerMapX, playerMapY, 2, 0, doublePI);
+    context.fill();
+    context.strokeStyle = 'Red';
+    context.lineWidht = 1;
+    context.beginPath();
+    context.moveTo(playerMapX, playerMapY);
+    context.lineTo(playerMapX + Math.sin(playerAngle) * 5, playerMapY + Math.cos(playerAngle) * 5);
+    context.stroke();
+
+    // Faire grossir et retressir la map
     // for (var row = 0; row < map_size; row++) {
     //   for (var col = 0; col < map_size; col++) {
     //     var square = row * map_size + col;
